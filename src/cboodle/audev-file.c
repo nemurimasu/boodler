@@ -8,7 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include <errno.h>
 
 #include "common.h"
@@ -83,10 +85,16 @@ int audev_init_device(char *devname, long ratewanted, int verbose, extraopt_t *e
 
   if (!ratewanted)
     ratewanted = DEFAULT_SOUNDRATE;
-  if (!devname) 
+  if (!devname)
     devname = DEFAULT_FILENAME;
 
+#ifdef _WIN32
+  if (fopen_s(&device, devname, "wb")) {
+    device = NULL;
+  }
+#else
   device = fopen(devname, "wb");
+#endif
   if (!device) {
     fprintf(stderr, "Error opening file %s\n", devname);
     return FALSE;
@@ -124,7 +132,7 @@ int audev_init_device(char *devname, long ratewanted, int verbose, extraopt_t *e
     fprintf(stderr, "Unable to allocate sound buffer.\n");
     fclose(device);
     device = NULL;
-    return FALSE;    
+    return FALSE;
   }
 
   valbuffer = (long *)malloc(sizeof(long) * samplesperbuf);
@@ -134,7 +142,7 @@ int audev_init_device(char *devname, long ratewanted, int verbose, extraopt_t *e
     rawbuffer = NULL;
     fclose(device);
     device = NULL;
-    return FALSE;     
+    return FALSE;
   }
 
   return TRUE;
@@ -214,4 +222,3 @@ int audev_loop(mix_func_t mixfunc, generate_func_t genfunc, void *rock)
       return FALSE;
   }
 }
-

@@ -137,7 +137,7 @@ long note_create_reps(sample_t *samp, double pitch, double volume,
   note = (note_t *)malloc(sizeof(note_t));
   if (!note)
     return 0;
-  
+
   ratio = (samp->framerate * pitch);
   if (!samp->hasloop || reps <= 1) {
     reps = 1;
@@ -150,7 +150,7 @@ long note_create_reps(sample_t *samp, double pitch, double volume,
   note->sample = samp;
   note->pitch = pitch;
   note->volume = volume;
-  /* Must copy the pan struct that was passed in, because it is 
+  /* Must copy the pan struct that was passed in, because it is
      stack-allocated. */
   note->pan = *pan;
   note->starttime = starttime;
@@ -327,7 +327,7 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 
     /* We must compute a total volume, by multiplying the note's
        volume by the volume factor of every channel it's in. We do
-       this by iterating up the channel tree. 
+       this by iterating up the channel tree.
 
        The tricky part is that some channels might be in the middle of
        a volume change, which means we can't just multiply in a
@@ -353,14 +353,14 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 	PyObject *vol = PyObject_GetAttrString(chan, "volume");
 	if (vol) {
 	  if (PyTuple_Check(vol) && PyTuple_Size(vol) == 4) {
-	    /* A channel's volume is a 4-tuple: 
+	    /* A channel's volume is a 4-tuple:
 
 	       (int starttime, int endtime, float startvol, float endvol)
 
 	       This is the general case: the volume fades from
 	       startvol to endvol over an interval. Before starttime,
 	       we assume the volume is flat at startvol; after
-	       endtime, we assume endvol. 
+	       endtime, we assume endvol.
 
 	       If the volume is completely constant, endtime will be
 	       zero, or perhaps just before current_time. (This fits
@@ -391,7 +391,7 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 
 		if (numranges >= maxranges) {
 		  maxranges *= 2;
-		  ranges = (volrange_t *)realloc(ranges, 
+		  ranges = (volrange_t *)realloc(ranges,
 		    sizeof(volrange_t) * maxranges);
 		  if (!ranges)
 		    return TRUE;
@@ -421,7 +421,7 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 	       (int starttime, int endtime, tuple startpan, tuple endpan)
 
 	       Like the volume tuple, this is the general case. The
-	       startpan and endpan values are stereo objects. 
+	       startpan and endpan values are stereo objects.
 
 	       A stereo object is a 0-, 2-, or 4-tuple. In full form:
 	       (xscale, xshift, yscale, yshift)
@@ -486,7 +486,11 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 	      }
 	    }
 	    else {
-	      /* Record the pan positions at the start and end of the 
+	      stereo_t tuplestart, tupleend;
+	      stereo_t usetuple;
+	      int tuplesizestart = 0;
+	      int tuplesizeend = 0;
+	      /* Record the pan positions at the start and end of the
 		 buffer (current_time and end_time). */
 	      if (!bothpans) {
 		/* This is the first non-constant pan we've hit. Set
@@ -496,9 +500,6 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 		bothpans = TRUE;
 	      }
 	      /* Extract the stereo object values into stereo_t structs. */
-	      stereo_t tuplestart, tupleend;
-	      int tuplesizestart = 0;
-	      int tuplesizeend = 0;
 	      if (PyTuple_Check(startpan))
 		tuplesizestart = PyTuple_Size(startpan);
 	      if (tuplesizestart >= 2) {
@@ -537,7 +538,6 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 	      }
 
 	      /* Interpolate for current_time, into pan0. */
-	      stereo_t usetuple;
 	      if (current_time >= endtm) {
 		usetuple = tupleend;
 	      }
@@ -621,7 +621,7 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
     else {
       notestart = 0;
     }
-    
+
     valptr = &buffer[notestart*2];
 
     if (samp->numchannels == 1) {
@@ -630,6 +630,10 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
       /* Compute the volume adjustment for the left and right output
 	 channels, based on the pan position. */
       double vollft, volrgt;
+      long ivollft, ivolrgt;
+#ifdef BOODLER_INTMATH
+      long ivollftbase, ivolrgtbase;
+#endif
 
       if (!bothpans) {
 	leftright_volumes(pan0.shiftx, pan0.shifty, &vollft, &volrgt);
@@ -663,10 +667,6 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 #endif
       }
 
-      long ivollft, ivolrgt;
-#ifdef BOODLER_INTMATH
-      long ivollftbase, ivolrgtbase;
-#endif
       ivollft = (long)(volume * vollft * 65536.0);
       ivolrgt = (long)(volume * volrgt * 65536.0);
 #ifdef BOODLER_INTMATH
@@ -744,7 +744,7 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 
 	reslef = ((result >> 16) * ivollft) >> 16;
 	resrgt = ((result >> 16) * ivolrgt) >> 16;
-	
+
 	*valptr += reslef;
 	valptr++;
 	*valptr += resrgt;
@@ -772,10 +772,15 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 	 channels, based on the pan position. We have to do this
 	 twice: for input channel 0 and for input channel 1. */
       double vol0lft, vol0rgt, vol1lft, vol1rgt;
+      long ivol0lft, ivol0rgt, ivol1lft, ivol1rgt;
+#ifdef BOODLER_INTMATH
+      long ivol0lftbase, ivol0rgtbase;
+      long ivol1lftbase, ivol1rgtbase;
+#endif
 
       if (!bothpans) {
 	leftright_volumes(pan0.shiftx - pan0.scalex, pan0.shifty,
-	  &vol0lft, &vol0rgt); 
+	  &vol0lft, &vol0rgt);
 	leftright_volumes(pan0.shiftx + pan0.scalex, pan0.shifty,
 	  &vol1lft, &vol1rgt);
       }
@@ -835,11 +840,6 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 
       /* printf("(%gA+%gB , %gA+%gB)\n", vol0lft, vol1lft, vol0rgt, vol1rgt); */
 
-      long ivol0lft, ivol0rgt, ivol1lft, ivol1rgt;
-#ifdef BOODLER_INTMATH
-      long ivol0lftbase, ivol0rgtbase;
-      long ivol1lftbase, ivol1rgtbase;
-#endif      
       ivol0lft = (long)(volume * vol0lft * 65536.0);
       ivol0rgt = (long)(volume * vol0rgt * 65536.0);
       ivol1lft = (long)(volume * vol1lft * 65536.0);
@@ -850,7 +850,7 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
       ivol1lftbase = ivol1lft;
       ivol1rgtbase = ivol1rgt;
 #endif
-      
+
       for (lx=notestart; lx<framesperbuf; lx++) {
 	long cursamp, nextsamp;
 	long val0, val1;
@@ -938,7 +938,7 @@ int noteq_generate(long *buffer, generate_func_t genfunc, void *rock)
 	res0rgt = ((resch0 >> 16) * ivol0rgt) >> 16;
 	res1lef = ((resch1 >> 16) * ivol1lft) >> 16;
 	res1rgt = ((resch1 >> 16) * ivol1rgt) >> 16;
-      
+
 	*valptr += (res0lef+res1lef);
 	valptr++;
 	*valptr += (res0rgt+res1rgt);
@@ -1019,7 +1019,7 @@ void noteq_adjust_timebase(long offset)
 
   for (note = queue; note; note = note->next) {
     note->starttime -= offset;
-  }  
+  }
 }
 
 /* Given a point-source of sound at (shiftx, shifty), determine the
@@ -1030,7 +1030,7 @@ static void leftright_volumes(double shiftx, double shifty,
   double *outlft, double *outrgt)
 {
   double vollft, volrgt;
-  double dist; 
+  double dist;
 
   /* compute dist = max(abs(shiftx), abs(shifty)) */
 
@@ -1055,7 +1055,7 @@ static void leftright_volumes(double shiftx, double shifty,
   }
 
   /* Now shiftx, shifty are in the range [-1, 1] */
-      
+
   /* Compute the volume levels, based on shiftx. (The Y value has no
      effect inside the [-1, 1] range.) */
 
