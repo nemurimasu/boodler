@@ -1,3 +1,4 @@
 /build/
 /dist/
 /src/Boodler.egg-info/
+/src/cboodle/cboodle-*.c
