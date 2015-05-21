@@ -24,24 +24,25 @@ many example soundscapes. You can use these, modify them, combine them
 to arbitrary levels of complexity, or write your own.
 
 Boodler is written in Python, with the driver modules (cboodle_*)
-written in C. It was developed under Python 2.3.5 and Python 2.5.1; 
+written in C. It was developed under Python 2.3.5 and Python 2.5.1;
 more recent Python 2.x versions should work as well.
 
 Boodler can generate audio output to several destinations, each of
 which is defined by a driver module:
 
-    file:   write file containing raw sample output
-    stdout: write raw sample output to stdout
-    oss:    Open Sound System
-    esd:    Enlightened Sound Daemon
-    alsa:   Advanced Linux Sound Architecture
-    pulse:  PulseAudio
-    jackb:  JACK via Bio2Jack
-    osxaq:  MacOSX AudioQueue
-    macosx: MacOSX CoreAudio
-    vorbis: write Ogg Vorbis file
-    shout:  Shoutcast or Icecast source
-    lame:   write MP3 file
+    file:      write file containing raw sample output
+    stdout:    write raw sample output to stdout
+    oss:       Open Sound System
+    esd:       Enlightened Sound Daemon
+    alsa:      Advanced Linux Sound Architecture
+    pulse:     PulseAudio
+    jackb:     JACK via Bio2Jack
+    osxaq:     MacOSX AudioQueue
+    macosx:    MacOSX CoreAudio
+    portaudio: cross-platform output
+    vorbis:    write Ogg Vorbis file
+    shout:     Shoutcast or Icecast source
+    lame:      write MP3 file
 
 Boodler does not come with any warranty of any sort whatsoever.
 

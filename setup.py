@@ -10,12 +10,13 @@ import sys
 import os
 import os.path
 import re
-from setuptools import setup, Extension, Command
+from setuptools import Extension, Command
 from distutils.command.build_ext import build_ext
 from distutils.command.build_scripts import build_scripts
 from distutils.errors import *
 from distutils.util import convert_path
 import distutils.log
+from cx_Freeze import setup, Executable
 
 def append_if(cond, list1, list2):
     """append_if(cond, list1, list2) -> list
@@ -599,4 +600,9 @@ to arbitrary levels of complexity, or write your own.
         'generate_source': local_generate_source,
         'generate_pydoc': local_generate_pydoc,
     },
+    executables = [
+        Executable('script/boodler'),
+        Executable('script/boodle-mgr'),
+        Executable('script/boodle-event')
+    ],
 )
