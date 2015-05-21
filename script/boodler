@@ -4,13 +4,13 @@
 # Designed by Andrew Plotkin <erkyrath@eblong.com>
 # For more information, see <http://boodler.org/>
 #
-# This Python script ("boodler") is in the public domain. 
-# The Python modules that it uses (boodle, boopak, and booman) are 
-# licensed under the GNU Library General Public License (LGPL). The 
+# This Python script ("boodler") is in the public domain.
+# The Python modules that it uses (boodle, boopak, and booman) are
+# licensed under the GNU Library General Public License (LGPL). The
 # cboodle extensions are licensed under either the LGPL or the GPL.
 #
 # You should have received a copy of the GNU Library General Public License
-# along with this program. (It should be a document entitled "LGPL".) 
+# along with this program. (It should be a document entitled "LGPL".)
 # If not, see the web URL above, or write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
@@ -20,12 +20,13 @@ import optparse
 import logging
 import traceback
 import StringIO
+from os.path import expanduser
 
 # same as in boodle-mgr
 if ('darwin' in sys.platform.lower()):
-    Default_Relative_Data_Dir = 'Library/Application Support/Boodler'
+    Default_Relative_Data_Dir = '~/Library/Application Support/Boodler'
 else:
-    Default_Relative_Data_Dir = '.boodler'
+    Default_Relative_Data_Dir = '~/.boodler'
 
 defaultdriver = 'oss'
 if (sys.platform == 'darwin'):
@@ -140,7 +141,7 @@ basedir = opts.basedir
 if (not basedir):
     basedir = os.environ.get('BOODLER_DATA')
 if (not basedir):
-    basedir = os.path.join(os.environ.get('HOME'), Default_Relative_Data_Dir)
+    basedir = expanduser(Default_Relative_Data_Dir)
 
 coldir = opts.collection
 if (not coldir):
@@ -169,7 +170,7 @@ class LogFormatter(logging.Formatter):
     (or lack of it) when showing backtraces, and when showing the logger
     name on each line.
     """
-    
+
     def __init__(self, verbose):
         if (verbose):
             dateformat = '%b-%d %H:%M:%S'
@@ -207,7 +208,7 @@ class LogFormatter(logging.Formatter):
         the boodle.* package. This is a moderately filthy hack, but
         convenient.
         """
-        
+
         if (self.verboseerrors):
             # Standard, complete traceback.
             return logging.Formatter.formatException(self, tup)
@@ -236,7 +237,7 @@ class LogFormatter(logging.Formatter):
                 depth += 1
             if (not limit):
                 limit = None
-        
+
         fl = StringIO.StringIO()
         traceback.print_tb(tup[2], limit=limit, file=fl)
         res = fl.getvalue()
@@ -256,14 +257,14 @@ class LogFormatter(logging.Formatter):
         # staring into the abyss.
         tup = None
         ex = None
-        
+
         ls = res.split('\n')
         ls = [ ln for ln in ls if ln ]
         ls = ls[-2:]
         if (moreinfo):
             ls.extend(moreinfo)
         return ('\n'.join(ls))
-        
+
 rootlogger = logging.getLogger()
 level = None
 
@@ -397,7 +398,7 @@ try:
         except:
             strtitle = 'unable to encode agent title'
         extraopts.append( ('title', strtitle) )
-    
+
     cboodle.init(opts.devname, opts.ratewanted, opts.verbosehardware, extraopts)
     extraopts = None
 
@@ -415,4 +416,3 @@ except Exception, ex:
         exc_info=True)
 
 gen.close()
-

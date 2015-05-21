@@ -9,21 +9,22 @@
 # Library General Public License (LGPL).
 #
 # You should have received a copy of the GNU Library General Public License
-# along with this program. (It should be a document entitled "LGPL".) 
+# along with this program. (It should be a document entitled "LGPL".)
 # If not, see the web URL above, or write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys
 import os
 from optparse import OptionParser
+from os.path import expanduser
 
 from booman import frame
 
 # same as in boodler
 if ('darwin' in sys.platform.lower()):
-    Default_Relative_Data_Dir = 'Library/Application Support/Boodler'
+    Default_Relative_Data_Dir = '~/Library/Application Support/Boodler'
 else:
-    Default_Relative_Data_Dir = '.boodler'
+    Default_Relative_Data_Dir = '~/.boodler'
 
 parser = OptionParser(usage='usage: %prog [ options ] [ command... ]',
     description='Type "%prog help" for a list of commands, or "%prog" by itself for interactive mode.')
@@ -49,7 +50,7 @@ basedir = options.basedir
 if (not basedir):
     basedir = os.environ.get('BOODLER_DATA')
 if (not basedir):
-    basedir = os.path.join(os.environ.get('HOME'), Default_Relative_Data_Dir)
+    basedir = expanduser(Default_Relative_Data_Dir)
 
 coldir = options.collection
 if (not coldir):
@@ -62,7 +63,7 @@ if (not dldir):
 if (not args):
     print 'Welcome to Boodle-Manager. Type "help" for a list of commands.'
 
-# Prepare the package manager.      
+# Prepare the package manager.
 frame.setup_loader(basedir, coldir, dldir, importing_ok=options.importing_ok)
 
 # If args exist, execute them as a command. If not, loop grabbing and
@@ -80,6 +81,5 @@ try:
 except KeyboardInterrupt:
     print '<interrupted>'
 
-# Shut down the package manager.        
+# Shut down the package manager.
 frame.cleanup()
-
