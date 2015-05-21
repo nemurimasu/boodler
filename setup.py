@@ -184,6 +184,10 @@ all_extensions = [
             check_header_available('CoreAudio.framework/Headers/CoreAudio.h'),
             check_header_available('AudioToolbox.framework/Headers/AudioQueue.h')),
     ),
+
+    BooExtension('portaudio',
+        libraries = ['portaudio']
+    ),
 ]
 
 class local_build_ext(build_ext):

@@ -10,6 +10,7 @@ driver_list = [
     'file', 'stdout',
     'oss', 'esd', 'alsa', 'pulse', 'jackb',
     'osxaq', 'macosx',
+    'portaudio',
     'vorbis', 'shout', 'lame',
 ]
 
@@ -23,6 +24,7 @@ driver_map = {
     'jackb': 'JACK via Bio2Jack',
     'osxaq': 'MacOSX AudioQueue',
     'macosx': 'MacOSX CoreAudio',
+    'portaudio': 'PortAudio',
     'vorbis': 'write Ogg Vorbis file',
     'shout': 'Shoutcast or Icecast source',
     'lame': 'write MP3 file with LAME encoder',
@@ -56,7 +58,7 @@ def set_driver(key):
     If the driver is not available, this raises ImportError.
     """
     global cboodle
-    
+
     modname = 'cboodle_'+key
     selfmod = __import__('boodle.'+modname)
     driver = getattr(selfmod, modname)
@@ -73,11 +75,11 @@ def list_drivers():
     """list_drivers() -> list of (str, str)
 
     List the Boodler drivers which are installed and usable.
-    Returns a list of tuples (key, fullname). In each pair, key is a 
+    Returns a list of tuples (key, fullname). In each pair, key is a
     driver key (which can be passed to set_driver()), and fullname
     is a human-readable description of the driver.
     """
-    
+
     ls = []
 
     for key in driver_list:
@@ -96,7 +98,7 @@ def list_drivers():
 
 class BoodlerError(Exception):
     """BoodlerError: A parent class for errors encountered during
-    Boodler operation. These include violations of internal sanity 
+    Boodler operation. These include violations of internal sanity
     checks, and sanity checks on imported package code.
 
     When a BoodlerError is displayed, the last (lowest) stack frame
@@ -125,11 +127,11 @@ _valid_prop_names = {}
 def check_prop_name(val):
     """check_prop_name(val) -> str
 
-    Ensure that the value is a valid event or property name. If it isn't, 
-    raise BoodlerError. If it is, return a str version of it (in case it 
+    Ensure that the value is a valid event or property name. If it isn't,
+    raise BoodlerError. If it is, return a str version of it (in case it
     was a unicode object).
     """
-    
+
     res = _valid_prop_names.get(val)
     if (res):
         return res
